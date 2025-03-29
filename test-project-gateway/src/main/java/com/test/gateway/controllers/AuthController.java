@@ -34,15 +34,16 @@ public class AuthController {
 	private JWTUtil jwtUtil;
 	
 	@PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Mono<ResponseEntity<Object>> login(@RequestBody UserRequest user) {
+	public Mono<ResponseEntity<? extends Object>> login(@RequestBody UserRequest user) {
 		try {
 			Mono<Authentication> authMono = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 			return authMono.flatMap(auth -> {
 				if (auth == null || auth.isAuthenticated()) return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse("User not found.")));
 				return Mono.just(ResponseEntity.ok().body(new UserResponse(jwtUtil.generateToken(auth.getPrincipal().toString(), user.getUsername()))));
+			}).onErrorResume(e -> {
+				return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage())));
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage())));
 		}
 		

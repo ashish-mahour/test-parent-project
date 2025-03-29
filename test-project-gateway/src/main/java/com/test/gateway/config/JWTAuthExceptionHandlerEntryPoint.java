@@ -1,5 +1,7 @@
 package com.test.gateway.config;
 
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -15,6 +17,7 @@ public class JWTAuthExceptionHandlerEntryPoint implements ServerAuthenticationEn
 	@Override
 	public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
 	 	ServerHttpResponse response = exchange.getResponse();
+	 	response.writeWith(Mono.just(response.bufferFactory().wrap(ex.getMessage().getBytes(StandardCharsets.UTF_8))));
 	 	response.setStatusCode(HttpStatus.UNAUTHORIZED);
 		return response.setComplete();
 	}

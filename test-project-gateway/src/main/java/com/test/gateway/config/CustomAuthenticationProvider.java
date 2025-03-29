@@ -28,16 +28,13 @@ public class CustomAuthenticationProvider implements ReactiveAuthenticationManag
 	public Mono<Authentication> authenticate(Authentication authentication) {
 		LOG.info("Principal: " + authentication.getPrincipal());
 		Mono<UserDetails> userMono = authService.findByUsername(authentication.getPrincipal().toString());
-		userMono.doOnError(e -> {
-			throw new BadCredentialsException("Username doesn't found.");
-		});
 		return userMono.flatMap(userDetails -> {
 			if (userDetails == null) throw new BadCredentialsException("Username doesn't found.");
 			if (passwordEncoder.matches(authentication.getCredentials().toString(), userDetails.getPassword())) {
 				return Mono.just(new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword()));
 			}
-			throw new BadCredentialsException("Username & Password doesn't matched.");
-		});
+			throw new BadCredentialsException("Password doesn't matched.");
+		}).switchIfEmpty(Mono.error(new BadCredentialsException("Username doesn't found."))).cast(Authentication.class);
 	}
 
 }
