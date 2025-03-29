@@ -8,28 +8,29 @@ import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.test.gateway.entities.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JWTUtil {
 	
-	private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+	@Value("${security.jwt.secret-key}")
+    private String secretKey;
 	
 	private final Logger LOG = Logger.getLogger("JWTUtil");
 	
 	private final SimpleDateFormat formatter = new SimpleDateFormat();
 	
-	public String generateToken(User user) {
+	public String generateToken(String email, String username) {
 		Claims claims = Jwts.claims();
-		claims.setSubject(user.getEmail());
-		claims.put("name", user.getName());
+		claims.setSubject(email);
+		claims.put("username", username);
 		Date tokenCreationTime = new Date();
 		LOG.log(Level.INFO, "Token Creation Date: " + formatter.format(tokenCreationTime));
 		Date tokenValidity = new Date(tokenCreationTime.getTime() + TimeUnit.DAYS.toMillis(30));
@@ -37,16 +38,21 @@ public class JWTUtil {
 		return Jwts.builder()
 				.addClaims(claims)
 				.setExpiration(tokenValidity)
-				.signWith(SECRET_KEY)
+				.signWith(getSignInKey(), SignatureAlgorithm.HS256)
 				.compact();
 	}
 	
 	public Claims validateToken(String token) {
 		return Jwts.parserBuilder()
-				.setSigningKey(SECRET_KEY)
+				.setSigningKey(getSignInKey())
 				.build()
 				.parseClaimsJws(token)
 				.getBody();
 	}
+	
+	private SecretKey getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
 }

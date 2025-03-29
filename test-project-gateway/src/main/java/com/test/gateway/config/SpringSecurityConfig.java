@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -26,21 +25,19 @@ public class SpringSecurityConfig {
 	@Autowired
 	private JWTAutoFilter jwtAutoFilter;
 	
-	@Autowired
-	private CustomAuthenticationProvider customAuthenticationProvider;
-	
 	@Bean
 	public SecurityWebFilterChain getSecurityFilterChain(ServerHttpSecurity http) {
 		return http.csrf(specs -> specs.disable())
 				.cors(config -> config.disable())
 				.authorizeExchange(exchange -> exchange
-						.pathMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+						.pathMatchers(HttpMethod.POST, "/api/auth/*").permitAll()
 						.anyExchange().authenticated())
 				.httpBasic(HttpBasicSpec::disable)
 				.formLogin(FormLoginSpec::disable)
 				.logout(LogoutSpec::disable)
 				.exceptionHandling(expection -> expection.authenticationEntryPoint(entrypoint))
 				.addFilterBefore(jwtAutoFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+				.authenticationManager(getReactiveAuthenticationManager())
 				.build();
 	}
 	
@@ -48,9 +45,9 @@ public class SpringSecurityConfig {
 	public PasswordEncoder getPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
+	
 	@Bean
-	public AuthenticationManager getAuthenticationManager() throws Exception {
-		return new ProviderManager(customAuthenticationProvider);
+	public ReactiveAuthenticationManager getReactiveAuthenticationManager() {
+		return new CustomAuthenticationProvider();
 	}
 }

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -28,9 +27,6 @@ public class JWTAutoFilter implements WebFilter {
 	@Autowired
 	private JWTUtil jwtUtil;
 	
-	@Autowired
-	AuthenticationManager authenticationManager;
-	
 	private final Logger LOG = Logger.getLogger(JWTAutoFilter.class.getName());
 	
 	@Override
@@ -40,19 +36,21 @@ public class JWTAutoFilter implements WebFilter {
 		final String requestToken = request.getHeaders().getFirst("Authorization");
 		SecurityContext context = SecurityContextHolder.getContext();
 		try {
+			LOG.info("Request Token: "+ requestToken);
 			if (requestToken != null && requestToken.startsWith("Bearer") && context.getAuthentication() == null) {
 				final String token = requestToken.substring(7);
 				Claims claims = jwtUtil.validateToken(token);
 				LOG.log(Level.INFO, claims.toString());
-				Authentication auth = new UsernamePasswordAuthenticationToken(claims.getSubject(), claims.get("password"), List.of());
+				Authentication auth = new UsernamePasswordAuthenticationToken(claims.getSubject(), claims.get("username"), List.of());
 				context.setAuthentication(auth);
 
 				return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
 			} else {
-				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				LOG.info("Already Authorized Request: " + context.getAuthentication().getName());
+				return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(context.getAuthentication()));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(Level.WARNING, e.getMessage());
 			response.setStatusCode(HttpStatus.UNAUTHORIZED);
 		}
 		return chain.filter(exchange);

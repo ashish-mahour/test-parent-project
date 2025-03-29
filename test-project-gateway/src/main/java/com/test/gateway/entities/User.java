@@ -3,18 +3,22 @@ package com.test.gateway.entities;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Table
 public class User {
 	@Id
+	@JsonProperty(access  = JsonProperty.Access.WRITE_ONLY)
 	private Long id;
 	@Column
 	private String name;
 	@Column
 	private String email;
 	@Column
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
 	@Column
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String type;
 	
 	public User(String name, String email, String password, String type) {
