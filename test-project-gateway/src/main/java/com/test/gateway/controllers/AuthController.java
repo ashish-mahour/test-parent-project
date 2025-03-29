@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.test.gateway.config.JWTUtil;
 import com.test.gateway.entities.User;
 import com.test.gateway.models.ErrorResponse;
 import com.test.gateway.models.UserRequest;
 import com.test.gateway.models.UserResponse;
 import com.test.gateway.services.AuthService;
+import com.test.gateway.services.JWTUtil;
 
 import reactor.core.publisher.Mono;
 

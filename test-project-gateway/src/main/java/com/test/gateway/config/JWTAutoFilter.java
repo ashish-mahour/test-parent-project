@@ -18,6 +18,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 
+import com.test.gateway.services.JWTUtil;
+
 import io.jsonwebtoken.Claims;
 import reactor.core.publisher.Mono;
 
