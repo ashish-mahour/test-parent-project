@@ -20,6 +20,8 @@ public class User {
 	@Column
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String type;
+
+	public User() {}
 	
 	public User(String name, String email, String password, String type) {
 		super();
