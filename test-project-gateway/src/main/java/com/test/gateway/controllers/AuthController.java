@@ -18,6 +18,7 @@ import com.test.gateway.models.UserResponse;
 import com.test.gateway.services.AuthService;
 import com.test.gateway.services.JWTUtil;
 
+import io.micrometer.tracing.Tracer;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -33,6 +34,9 @@ public class AuthController {
 	@Autowired
 	private JWTUtil jwtUtil;
 	
+	@Autowired
+	private Tracer tracer;
+	
 	@PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public Mono<ResponseEntity<? extends Object>> login(@RequestBody UserRequest user) {
 		try {
@@ -41,10 +45,10 @@ public class AuthController {
 				if (auth == null || auth.isAuthenticated()) return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse("User not found.")));
 				return Mono.just(ResponseEntity.ok().body(new UserResponse(jwtUtil.generateToken(auth.getPrincipal().toString(), user.getUsername()))));
 			}).onErrorResume(e -> {
-				return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage())));
+				return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage(), tracer.currentSpan().context().traceId(), tracer.currentSpan().context().spanId())));
 			});
 		} catch (Exception e) {
-			return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage())));
+			return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(e.getMessage(), tracer.currentSpan().context().traceId(), tracer.currentSpan().context().spanId())));
 		}
 		
 	}

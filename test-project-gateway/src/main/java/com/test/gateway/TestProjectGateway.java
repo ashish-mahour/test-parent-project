@@ -10,6 +10,7 @@ import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
 import io.r2dbc.spi.ConnectionFactory;
+import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -18,6 +19,7 @@ public class TestProjectGateway {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TestProjectGateway.class, args);
+		Hooks.enableAutomaticContextPropagation();
 	}
 	
 	@Bean(destroyMethod = "")
