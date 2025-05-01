@@ -1,6 +1,8 @@
 package com.test.gateway;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ import reactor.core.publisher.Hooks;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableWebFlux
+@EnableAutoConfiguration(exclude = ZipkinAutoConfiguration.class)
 public class TestProjectGateway {
 
 	public static void main(String[] args) {
