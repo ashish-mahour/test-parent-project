@@ -1,4 +1,9 @@
 */target/**
 .vscode/settings.json
-*/*.project
-*/*.classpath
+.classpath
+.factorypath
+.settings/*
+*/.factorypath
+.project
+*/.factorypath
+*/.settings/
